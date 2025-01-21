@@ -23,7 +23,6 @@ const SignInScreen = ({navigation}) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -62,7 +61,6 @@ const SignInScreen = ({navigation}) => {
   const getToken = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      console.log(token,'kkkkkkk');
       return token || null;
     } catch (error) {
       console.error('Failed to retrieve token:', error);
@@ -153,8 +151,6 @@ const SignInScreen = ({navigation}) => {
       });
 
       if (result?.success) {
-        console.log(result.data.token, 'result.data.token');
-        console.log(result.data._id, 'result.data._id');
 
         if (result.data.token && result.data._id) {
           await AsyncStorage.setItem('authToken', result.data.token);
@@ -215,8 +211,7 @@ const SignInScreen = ({navigation}) => {
           <>
             <TouchableOpacity
               style={styles.button}
-              // onPress={handleSign}
-              onPress={()=> navigation.navigate('ItemsPage')}
+              onPress={handleSign}
               disabled={loading || loadingAttachment}>
               {loading || loadingAttachment ? (
                 <ActivityIndicator color="#fff" />

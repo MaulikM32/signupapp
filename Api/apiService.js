@@ -34,7 +34,6 @@ export const apiCall = async ({
 
     // Fetch the token only if the endpoint requires it
     let token = null;
-    console.log('Request URL:', `${BASE_URL}${endpoint}`);
     if (!noAuthEndpoints.includes(endpoint)) {
       token = await getToken();
       if (!token) {

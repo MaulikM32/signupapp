@@ -1,18 +1,19 @@
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, FlatList, Text, TouchableOpacity} from 'react-native';
 import {ActivityIndicator, Card, Title, Paragraph} from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {apiCall} from '../Api/apiService';
 
 const TransactionHistoryScreen = ({navigation}) => {
   const [transactions, setTransactions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   const fetchTransactions = async () => {
     setIsLoading(true);
     setError('');
-    const token = await AsyncStorage.getItem('authToken');
     try {
+      const token = await AsyncStorage.getItem('authToken');
       const response = await apiCall({
         endpointKey: 'getTransaction',
         method: 'GET',
@@ -20,17 +21,18 @@ const TransactionHistoryScreen = ({navigation}) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(JSON.stringify(response.status), 'ppppppppp');
 
-      if (response && response?.transactions) {
-        setTransactions(response?.transactions);
+      if (response && response.transactions) {
+        setTransactions(response.transactions);
       } else {
         setError('No transactions found.');
       }
     } catch (err) {
-      setError('Failed to fetch transactions.. Please try again.');
+      setError('Failed to fetch transactions. Please try again.');
+      console.error('Error fetching transactions:', err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -39,8 +41,11 @@ const TransactionHistoryScreen = ({navigation}) => {
 
   const formatDate = dateString => {
     const date = new Date(dateString);
-    const options = {year: 'numeric', month: '2-digit', day: '2-digit'};
-    return new Intl.DateTimeFormat('en-GB', options).format(date); // Formatting to dd-mm-yyyy
+    return date.toLocaleDateString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
   };
 
   const renderTransaction = ({item}) => (
@@ -56,29 +61,37 @@ const TransactionHistoryScreen = ({navigation}) => {
     </Card>
   );
 
+  const renderContent = () => {
+    if (isLoading) {
+      return <ActivityIndicator size="large" style={styles.loader} />;
+    }
+
+    if (error) {
+      return <Text style={styles.errorText}>{error}</Text>;
+    }
+
+    if (transactions.length === 0) {
+      return <Text style={styles.emptyText}>No transactions found.</Text>;
+    }
+
+    return (
+      <FlatList
+        data={transactions}
+        keyExtractor={item => item._id}
+        renderItem={renderTransaction}
+        contentContainerStyle={styles.listContent}
+      />
+    );
+  };
+
   return (
     <View style={styles.container}>
-      {isLoading && transactions.length === 0 ? (
-        <ActivityIndicator size="large" style={styles.loader} />
-      ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : transactions.length === 0 ? (
-        <Text style={styles.emptyText}>No transactions found.</Text>
-      ) : (
-        <>
-          <FlatList
-            data={transactions}
-            keyExtractor={item => item._id}
-            renderItem={renderTransaction}
-            contentContainerStyle={styles.listContent}
-          />
-          <TouchableOpacity
-            style={{alignSelf: 'center', top: -100}}
-            onPress={() => navigation.navigate('ItemsPage')}>
-            <Text>Next page</Text>
-          </TouchableOpacity>
-        </>
-      )}
+      {renderContent()}
+      <TouchableOpacity
+        
+        onPress={() => navigation.navigate('ItemsPage')}>
+        <Text style={{color:'#000', alignSelf:'center',paddingBottom:50}}>Next page</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -90,7 +103,9 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   loader: {
-    marginTop: 20,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
     textAlign: 'center',
@@ -105,11 +120,25 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 60, 
   },
   card: {
     marginBottom: 10,
     backgroundColor: 'white',
+  },
+  nextButton: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  nextButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

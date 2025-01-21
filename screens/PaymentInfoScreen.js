@@ -3,14 +3,13 @@ import {View, StyleSheet, Alert, ScrollView} from 'react-native';
 import {TextInput, Button, HelperText, useTheme} from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // For accessing stored data
-import { BASE_URL, token } from '../Api/apiConfig';
-
+import {BASE_URL, token} from '../Api/apiConfig';
 
 const PaymentInfoScreen = ({navigation}) => {
   const theme = useTheme();
   const [upiId, setUpiId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState(''); 
+  const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
   const [cardholderName, setCardholderName] = useState('');
   const [errors, setErrors] = useState({});
@@ -41,7 +40,6 @@ const PaymentInfoScreen = ({navigation}) => {
     }
     const token = await AsyncStorage.getItem('authToken');
     const userId = await AsyncStorage.getItem('userId');
-console.log(userId,'userId');
 
     try {
       const payload = {
@@ -55,20 +53,16 @@ console.log(userId,'userId');
         },
       };
 
-      console.log(payload);
-      
-
       const response = await axios.post(
-        `${BASE_URL}/payment/payment-info`, 
+        `${BASE_URL}/payment/payment-info`,
         payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
-      console.log(response);
 
       if (response.status === 200) {
         Alert.alert('Success', 'Payment information saved successfully.');

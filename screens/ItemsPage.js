@@ -18,9 +18,7 @@ const ItemsPage = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchItems = async () => {
-    console.log('llllll');
-    
+  const fetchItems = async () => {    
     setIsLoading(true);
     setError('');
     try {
